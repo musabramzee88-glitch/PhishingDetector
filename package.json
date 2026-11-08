@@ -1,0 +1,8 @@
+{
+  "name": "apexsec",
+  "version": "2.0.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "make-admin": "node make-admin.js" },
+  "engines": { "node": ">=18" }
+}

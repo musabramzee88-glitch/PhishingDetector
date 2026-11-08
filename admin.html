@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>ApexSec | لوحة الإدارة</title>
+<style>body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#0b0f19;color:#f3f4f6;padding:20px}.box{max-width:900px;margin:auto;background:#111827;border:1px solid #1f2937;border-radius:14px;padding:24px}h1{margin-top:0;font-size:1.3rem}input,button{font:inherit;padding:10px 14px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:#fff;margin:4px 0}button{background:#2563eb;border:0;cursor:pointer}.g{display:flex;gap:10px;flex-wrap:wrap}.c{background:#1f2937;border-radius:8px;padding:10px 16px}table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:12px}td,th{border-bottom:1px solid #1f2937;padding:6px;text-align:right}td{direction:ltr;word-break:break-all}.e{color:#f87171}.m{color:#9ca3af;font-size:.85rem}[hidden]{display:none}</style></head>
+<body><div class="box"><h1>ApexSec — لوحة الإدارة</h1>
+<form id="login" onsubmit="login(event)"><div><input id="u" placeholder="اسم المستخدم" autocomplete="username" required></div><div><input id="p" type="password" placeholder="كلمة المرور" autocomplete="current-password" required></div><button>دخول</button><div id="err" class="e"></div></form>
+<div id="panel" hidden><p>المستخدم: <b id="who"></b> <button onclick="logout()" style="float:left">خروج</button></p><p class="m">فريق الإدارة: <span id="admins"></span></p><div class="g" id="stats"></div><p class="m" id="svc"></p><h3>آخر العمليات (تُحفظ بالذاكرة فقط، بدون محتوى الملفات)</h3><table><thead><tr><th>الوقت</th><th>النوع</th><th>الهدف</th><th>الخطورة</th><th>الإجراء</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+<script>
+const $=id=>document.getElementById(id),LBL={url:"فحص روابط",file:"فحص ملفات",blocked:"ملفات محجوبة",cleaned:"ملفات منظّفة",chat:"رسائل CyberBot"};
+async function api(p,o){const r=await fetch(p,o),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j}
+function cell(tr,v){const td=document.createElement("td");td.textContent=v;tr.appendChild(td)}
+function render(d){$("who").textContent=d.user;$("admins").textContent=d.admins.join("، ");const st=$("stats");st.replaceChildren();for(const[k,v]of Object.entries(d.stats)){const c=document.createElement("div");c.className="c";c.textContent=(LBL[k]||k)+": "+v;st.appendChild(c)}
+const y=x=>x?"مفعّل":"غير مفعّل";$("svc").textContent="VirusTotal: "+y(d.services.virustotal)+" | Safe Browsing: "+y(d.services.safeBrowsing)+" | CyberBot AI: "+y(d.services.ai)+" | وقت التشغيل: "+d.uptimeMin+" دقيقة";
+const tb=$("rows");tb.replaceChildren();for(const e of d.log){const tr=document.createElement("tr");[new Date(e.t).toLocaleString("ar-IQ"),e.k,e.n,e.s+"%",e.a||""].forEach(v=>cell(tr,v));tb.appendChild(tr)}}
+async function load(){try{render(await api("/api/admin/stats"));$("login").hidden=true;$("panel").hidden=false}catch{$("login").hidden=false;$("panel").hidden=true}}
+async function login(e){e.preventDefault();$("err").textContent="";try{await api("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("u").value,password:$("p").value})});$("p").value="";load()}catch(x){$("err").textContent=x.message}}
+async function logout(){await api("/api/admin/logout",{method:"POST"});load()}
+load();
+</script></body></html>
